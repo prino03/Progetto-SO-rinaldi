@@ -5,7 +5,7 @@ buddyalloc buddy;
 char* mem[MEMORY_SIZE];
 
 void pseudo_init(){
-    buddy_init(&buddy , mem , MAX_LEVELS);
+    buddy_init(&buddy , mem , MAX_LEVELS , BUCKET_SIZE);
 }
 
 //questa funzione alloca in base a quanta memoria viene richiesta
