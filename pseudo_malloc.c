@@ -2,10 +2,16 @@
 
 //variabili globali
 buddyalloc buddy;
+bitmap map;
 char* mem[MEMORY_SIZE];
+char* map_buf[10]; // cambia il 10, non so la dimensione 
 
+//inizializziamo buddyalloc e mappa 
 void pseudo_init(){
-    buddy_init(&buddy , mem , MAX_LEVELS , BUCKET_SIZE);
+    int required_bitmap_bits = (1 << (MAX_LEVELS + 1)) - 1;
+    bitmap_init(&map , required_bitmap_bits , map_buf);
+
+    buddy_init(&buddy , mem , MAX_LEVELS , BUCKET_SIZE , &map);
 }
 
 //questa funzione alloca in base a quanta memoria viene richiesta
