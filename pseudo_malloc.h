@@ -5,7 +5,7 @@
 
 #define MAX_LEVELS 6
 #define MEMORY_SIZE (1<<20)    //sarebbe un megabyte, 2^20 = 1 shiftato 20 volte
-#define BUCKET_SIZE (MEMORY_SIZE >> (MAX_LEVELS - 1))    //ricontrollare il "-1"
+#define BUCKET_SIZE (MEMORY_SIZE >> (MAX_LEVELS - 1))   
 
 void pseudo_init();
 

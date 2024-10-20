@@ -11,7 +11,7 @@ void pseudo_init(){
     int required_bitmap_bits = (1 << (MAX_LEVELS + 1)) - 1;
     bitmap_init(&map , required_bitmap_bits , map_buf);
 
-    buddy_init(&buddy , mem , MAX_LEVELS , BUCKET_SIZE , &map);
+    buddy_init(&buddy , mem , MAX_LEVELS ,MEMORY_SIZE, BUCKET_SIZE , &map);
 }
 
 //questa funzione alloca in base a quanta memoria viene richiesta
@@ -19,7 +19,7 @@ void* pseudo_malloc(size_t size){
 
     if(size < (size_t)getpagesize()/4 ){
         //allochiamo con buddy
-        return get_buddy(&buddy , size);
+        return alloc_buddy(&buddy , size);
     }
     else{
         //allochiamo la memoria con mmap    
