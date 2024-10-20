@@ -103,11 +103,9 @@ void bitmap_occupy_block(bitmap* buddy_map ,int idx){
 }
 
 void bitmap_occupy_children(bitmap* buddy_map ,int parent_idx){
-
+    if (parent_idx > buddy_map->nbits)return;
+    
     bitmap_set_bit(buddy_map , parent_idx , 1);
-
-    if(0)return; //devo capire la condizione 
-
     bitmap_occupy_children(buddy_map , get_right_children_idx(parent_idx));
     bitmap_occupy_children(buddy_map , get_left_children_idx(parent_idx));
 
@@ -122,9 +120,17 @@ void* alloc_buddy(buddyalloc* buddy , size_t size){
     (salve prof, questi commenti sono per me, li eliminerò)
     */
     
+   if(size<=0){
+    printf("cant allocate 0 or less bytes");
+    return NULL;
+   }
+
+
+
    //a quale livello corrisponde la memoria che dobbiamo allocare?
    int level = get_level(buddy , size);
    if(level < 0)return -1; //error 
+   if(level>buddy->max_levels)level=buddy->max_levels;   
 
    //verifichiamo se un buddy a quel livello è disponibile
     bitmap* buddy_map = buddy->bitmap;
@@ -148,5 +154,7 @@ void* alloc_buddy(buddyalloc* buddy , size_t size){
 }
 
 void* free_buddy(void* to_free){
+
+
 
 } 
