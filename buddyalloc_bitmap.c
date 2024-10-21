@@ -102,37 +102,44 @@ void bitmap_occupy_block(bitmap* buddy_map ,int idx){
     bitmap_occupy_block(buddy_map , parent);
 }
 
-void bitmap_occupy_children(bitmap* buddy_map ,int parent_idx){
+void bitmap_free_parent(bitmap* map , int idx){
+
+    if(idx==0){
+        bitmap_set_bit(map , idx , 0);
+        return;
+    }
+    bitmap_set_bit(map , idx , 0);
+    if ((!bitmap_ret_bit_value(map , get_buddy_idx(idx)) ) ){       //se entrambi
+        bitmap_free_parent(map , get_parent_idx(idx));
+    }    
+    return;
+}
+
+void bitmap_change_children(bitmap* buddy_map ,int parent_idx , int value){
     if (parent_idx > buddy_map->nbits)return;
     
-    bitmap_set_bit(buddy_map , parent_idx , 1);
-    bitmap_occupy_children(buddy_map , get_right_children_idx(parent_idx));
-    bitmap_occupy_children(buddy_map , get_left_children_idx(parent_idx));
+    bitmap_set_bit(buddy_map , parent_idx , value);
+    bitmap_change_children(buddy_map , get_right_children_idx(parent_idx) , value );
+    bitmap_change_children(buddy_map , get_left_children_idx(parent_idx) , value );
 
 }
 
 void* alloc_buddy(buddyalloc* buddy , size_t size){
-    /*per allocare dobbiamo 
-    
-       - aggiornare i valori sulla bitmap      FATTO
-        - restituire il buddy oppure un errore se la memoria era insufficente 
-
-    (salve prof, questi commenti sono per me, li eliminerò)
-    */
     
    if(size<=0){
     printf("cant allocate 0 or less bytes");
     return NULL;
    }
+    
+    size+=sizeof(int); //we need some space to store the idx of the block
 
 
-
-   //a quale livello corrisponde la memoria che dobbiamo allocare?
+   //we calculate the level of the buddy
    int level = get_level(buddy , size);
    if(level < 0)return -1; //error 
    if(level>buddy->max_levels)level=buddy->max_levels;   
 
-   //verifichiamo se un buddy a quel livello è disponibile
+   //check if there is an available buddy 
     bitmap* buddy_map = buddy->bitmap;
    
     int idx = bitmap_get_free_buddy_idx(buddy_map , level);
@@ -145,16 +152,28 @@ void* alloc_buddy(buddyalloc* buddy , size_t size){
     //we have to change the value of the block and of its parents
     bitmap_occupy_block(buddy_map , idx);
     //we also have to change the value of all its children
-    bitmap_occupy_children(buddy_map , idx);
+    bitmap_change_children(buddy_map , idx , 1 );
 
     int block_size = buddy->mem_size >> level;
 
     char* to_return = buddy->memory + (idx- ( (2^get_idx_level(idx)) - 1) )*block_size; 
+    ((int*)to_return)[0] = idx;  //da controllare se corretto
     return (void*) to_return;
 }
 
-void* free_buddy(void* to_free){
+void free_buddy(buddyalloc* buddy , void* to_free){
+    if(!to_free){
+        printf("empty address");
+        return;
+    }
 
+    int* ptr = ((int*)to_free);
+    ptr-= sizeof(int);
 
+    int block_idx = ptr[0];  
 
+    bitmap_change_children( buddy->bitmap , block_idx , 0 ); //we free the childrens 
+
+    //now we have to free the parent, but only if our buddy is free
+    bitmap_free_parent(buddy->bitmap , block_idx);
 } 
