@@ -16,18 +16,20 @@ void bitmap_init(bitmap* mappa , int req_bitmap_bits , char* buf_map){
     mappa->nbits = req_bitmap_bits;
 }
 
-//ritorna l'indice del genitore 
+//returns index of the parent
 int get_parent_idx(int idx){
     if(idx==0)return -1;
 
     return (idx - 1) / 2;
 }
 
+//return correspondive level of idx
 int get_idx_level(int idx){
     int level = floor(log2(idx+1));
     return level;
 }
 
+//returns idx of buddy
 int get_buddy_idx(int idx){
     if (idx==0){
         return 0;
@@ -38,25 +40,29 @@ int get_buddy_idx(int idx){
     return idx - 1;
 }
 
+//returns left child idx
 int get_left_children_idx(int idx){
     return idx*2+1;
 }
 
+//returns right child idx
 int get_right_children_idx(int idx){
     return idx*2+2;
 }
 
+//calculates the correspondive level for a "size" size mem
 int get_level(buddyalloc* buddy , int size){
     
     int bucket_size = buddy->bucket_size;
     int pow = 0;
-    while(bucket_size < size){                          //appena la memoria è sufficiente ci fermiamo
-        bucket_size = bucket_size << 1;                 //raddoppiamo ogni volta
+    while(bucket_size < size){                          //when memory is enough we stop
+        bucket_size = bucket_size << 1;                 //we double every time
         pow++;
     }
-    return buddy->max_levels - pow - 1;                 //condiderando 0 il livello più grande
+    return buddy->max_levels - pow - 1;                 //0 is the biggest level
 }
 
+//returns value of idx bit in bitmap
 int bitmap_ret_bit_value(bitmap* buddy_map, int idx){
     int byte_map_idx = idx/8;
     int rest = idx%8;
@@ -67,6 +73,7 @@ int bitmap_ret_bit_value(bitmap* buddy_map, int idx){
     return result;
 }
 
+//updates value of bit
 void bitmap_set_bit(bitmap* buddy_map , int idx, int value){
     //we have to calculate the idx of the map array
     int byte_map_idx = idx/8;
@@ -81,6 +88,7 @@ void bitmap_set_bit(bitmap* buddy_map , int idx, int value){
     }
 }
 
+//return idx of free buddy in level
 int bitmap_get_free_buddy_idx(bitmap* buddy_map , int level){
     
     int first_level_idx = (2^level) - 1;    //first element idx of the level 
@@ -93,6 +101,7 @@ int bitmap_get_free_buddy_idx(bitmap* buddy_map , int level){
     return -1;
 }
 
+//changes value of our block and recursively of every parent
 void bitmap_occupy_block(bitmap* buddy_map ,int idx){
     bitmap_set_bit( buddy_map , idx , 1 );
     
@@ -102,6 +111,7 @@ void bitmap_occupy_block(bitmap* buddy_map ,int idx){
     bitmap_occupy_block(buddy_map , parent);
 }
 
+//changes value of parent if both buddys are free
 void bitmap_free_parent(bitmap* map , int idx){
 
     if(idx==0){
@@ -109,12 +119,13 @@ void bitmap_free_parent(bitmap* map , int idx){
         return;
     }
     bitmap_set_bit(map , idx , 0);
-    if ((!bitmap_ret_bit_value(map , get_buddy_idx(idx)) ) ){       //se entrambi
+    if ((!bitmap_ret_bit_value(map , get_buddy_idx(idx)) ) ){      
         bitmap_free_parent(map , get_parent_idx(idx));
     }    
     return;
 }
 
+//changes value of all childs recursively
 void bitmap_change_children(bitmap* buddy_map ,int parent_idx , int value){
     if (parent_idx > buddy_map->nbits)return;
     
@@ -124,10 +135,11 @@ void bitmap_change_children(bitmap* buddy_map ,int parent_idx , int value){
 
 }
 
+//allocates a block 
 void* alloc_buddy(buddyalloc* buddy , size_t size){
     
    if(size<=0){
-    printf("cant allocate 0 or less bytes");
+    printf("cant allocate 0 or less bytes\n");
     return NULL;
    }
     
@@ -138,32 +150,37 @@ void* alloc_buddy(buddyalloc* buddy , size_t size){
    int level = get_level(buddy , size);
    if(level < 0)return -1; //error 
    if(level>buddy->max_levels)level=buddy->max_levels;   
+    printf("allocating %d bytes at level %d\n", size, level);
+
 
    //check if there is an available buddy 
     bitmap* buddy_map = buddy->bitmap;
    
     int idx = bitmap_get_free_buddy_idx(buddy_map , level);
     if(idx<0){
-        printf("no free block available");
+        printf("no free block available\n");
         return -1;
     }
-
+    printf("we found a block of index %d, now we update the bitmap\n" , idx);
     //now we operate on the bitmap to signal the block has been occupied
     //we have to change the value of the block and of its parents
     bitmap_occupy_block(buddy_map , idx);
     //we also have to change the value of all its children
     bitmap_change_children(buddy_map , idx , 1 );
 
+    printf("bitmap updated\n");
+
     int block_size = buddy->mem_size >> level;
 
     char* to_return = buddy->memory + (idx- ( (2^get_idx_level(idx)) - 1) )*block_size; 
-    ((int*)to_return)[0] = idx;  //da controllare se corretto
+    ((int*)to_return)[0] = idx; 
     return (void*) to_return;
 }
 
+//frees previously allocated block
 void free_buddy(buddyalloc* buddy , void* to_free){
     if(!to_free){
-        printf("empty address");
+        printf("empty address\n");
         return;
     }
 
