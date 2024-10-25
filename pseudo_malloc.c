@@ -1,12 +1,13 @@
-#include "pseudo_malloc.h"
+#include "pseudo_malloc.h" 
 #include "buddyalloc_bitmap.h"
 #include <math.h>
+#include <stdio.h>
 
 //global variables 
 buddyalloc buddy;
 bitmap map;
-char* mem[MEMORY_SIZE];
-char* map_buf[BITMAP_SIZE]; 
+char mem[MEMORY_SIZE];
+char map_buf[BITMAP_SIZE]; 
 
 //inizialization of buddy and bitmap
 void pseudo_init(){
@@ -20,9 +21,11 @@ void pseudo_init(){
 void* pseudo_malloc(size_t size){
 
     if(size + sizeof(int) < (size_t)getpagesize()/4 ){
+        printf("allocating block with buddyallocator\n");
         return alloc_buddy(&buddy , size);
     }
     else{
+        printf("allocating block with mmap\n");
         void* ret = mmap(NULL , size +sizeof(int), PROT_READ | PROT_WRITE , MAP_PRIVATE , 0 , 0);
         int* ret_size=(int*)ret;
         *ret_size = size;
@@ -32,12 +35,18 @@ void* pseudo_malloc(size_t size){
 
 //we free previously allocated memory
 void pseudo_free(void* p){
-
-    size_t p_size = *((int*)p);  //da controllare
-    if (p >= mem && p< mem+(MEMORY_SIZE*sizeof(char))  ){   
+    if(p==NULL){
+        printf("error: NULL pointer\n");
+        return;
+    }
+    size_t p_size = *((int*)p);   //to check 
+    void* v_mem = (void*)mem;
+    if (p >= v_mem && p< v_mem+(MEMORY_SIZE*sizeof(char))  ){   
+        printf("freeing the block with buddyalloc\n");
         free_buddy(&buddy , p);
     }
     else{
+        printf("freeing the block with munmap\n");
         munmap(p , p_size);
     }
 }

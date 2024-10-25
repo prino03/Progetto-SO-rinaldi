@@ -1,7 +1,7 @@
 #pragma once
 #include <unistd.h>
 #include <sys/mman.h>
-
+ 
 #include "buddyalloc_bitmap.h"
 
 
@@ -14,4 +14,4 @@
 
 void pseudo_init();
 void* pseudo_malloc(size_t size);
-void pseudo_free(void* p);
+void pseudo_free(void* p); 

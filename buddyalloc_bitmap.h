@@ -1,6 +1,11 @@
 #pragma once 
 #include <unistd.h>
 
+//bitmap struct
+typedef struct  {
+    char* map;
+    int nbits;
+}bitmap;  
 
 //buddyalloc struct and its functions 
 typedef struct{
@@ -22,12 +27,7 @@ int get_right_children_idx(int idx);
 
 
 
-//bitmap struct and its functions
-typedef struct  {
-    char* map;
-    int nbits;
-}bitmap;
-
+//bitmap functions
 void bitmap_init(bitmap* mappa , int req_bitmap_bits , char* buf_map);
 int bitmap_ret_bit_value(bitmap* map , int idx);
 void bitmap_set_bit(bitmap* map , int idx , int value);

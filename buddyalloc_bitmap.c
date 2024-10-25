@@ -1,5 +1,7 @@
 #include "buddyalloc_bitmap.h"
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 
 void buddy_init(buddyalloc* buddy , char* mem , int levels ,int mem_size, int bucket_size, bitmap* map){
     
@@ -7,13 +9,15 @@ void buddy_init(buddyalloc* buddy , char* mem , int levels ,int mem_size, int bu
     buddy->max_levels  = levels;
     buddy->bucket_size = bucket_size;
     buddy->mem_size = mem_size;
-    buddy->bitmap = map;
+    buddy->bitmap = map; 
 
 }
 
 void bitmap_init(bitmap* mappa , int req_bitmap_bits , char* buf_map){
+    memset(buf_map, 0, req_bitmap_bits);
     mappa->map = buf_map;
     mappa->nbits = req_bitmap_bits;
+
 }
 
 //returns index of the parent
@@ -88,12 +92,22 @@ void bitmap_set_bit(bitmap* buddy_map , int idx, int value){
     }
 }
 
+//prints the bitmap
+void bitmap_printf(bitmap* map){
+    for (int i = 0 ; i < map->nbits ; i++ ){
+        printf("%d ", bitmap_ret_bit_value(map , i));
+        if( get_idx_level(i) != get_idx_level(i+1)  )printf("\n");
+    }
+}
+
 //return idx of free buddy in level
 int bitmap_get_free_buddy_idx(bitmap* buddy_map , int level){
-    
-    int first_level_idx = (2^level) - 1;    //first element idx of the level 
-    int last_level_idx = (2^(level+1)) -2;  //last element idx of the level
+
+    int first_level_idx = pow(2,level) - 1;    //first element idx of the level 
+    int last_level_idx = pow(2,(level+1)) -2;  //last element idx of the level
+
     for (int i = first_level_idx ; i<=last_level_idx ; i++){
+        printf("bit value%d\n", bitmap_ret_bit_value(buddy_map , i));
         if (!bitmap_ret_bit_value(buddy_map , i)){
             return i;
         }
@@ -148,18 +162,20 @@ void* alloc_buddy(buddyalloc* buddy , size_t size){
 
    //we calculate the level of the buddy
    int level = get_level(buddy , size);
-   if(level < 0)return -1; //error 
+   if(level < 0)return NULL; //error 
    if(level>buddy->max_levels)level=buddy->max_levels;   
-    printf("allocating %d bytes at level %d\n", size, level);
+    printf("allocating %ld bytes at level %d\n", size, level);
 
 
    //check if there is an available buddy 
     bitmap* buddy_map = buddy->bitmap;
-   
+
+    bitmap_printf(buddy_map);
+
     int idx = bitmap_get_free_buddy_idx(buddy_map , level);
     if(idx<0){
         printf("no free block available\n");
-        return -1;
+        return NULL;
     }
     printf("we found a block of index %d, now we update the bitmap\n" , idx);
     //now we operate on the bitmap to signal the block has been occupied
