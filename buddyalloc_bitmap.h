@@ -30,6 +30,7 @@ int get_right_children_idx(int idx);
 //bitmap functions
 void bitmap_init(bitmap* mappa , int req_bitmap_bits , char* buf_map);
 int bitmap_ret_bit_value(bitmap* map , int idx);
+void bitmap_printf(bitmap* bitmap);
 void bitmap_set_bit(bitmap* map , int idx , int value);
 int bitmap_get_free_buddy_idx(bitmap* buddy_map , int level);
 void bitmap_occupy_block(bitmap* buddy_map ,int idx);

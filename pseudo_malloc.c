@@ -2,6 +2,7 @@
 #include "buddyalloc_bitmap.h"
 #include <math.h>
 #include <stdio.h>
+#include <sys/mman.h>
 
 //global variables 
 buddyalloc buddy;
@@ -26,9 +27,10 @@ void* pseudo_malloc(size_t size){
     }
     else{
         printf("allocating block with mmap\n");
-        void* ret = mmap(NULL , size +sizeof(int), PROT_READ | PROT_WRITE , MAP_PRIVATE , 0 , 0);
+        void* ret = mmap(NULL , size +sizeof(int), PROT_READ | PROT_WRITE , MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         int* ret_size=(int*)ret;
         *ret_size = size;
+        printf("allocation with mmap completed returning pointer\n");
         return ret + sizeof(int);  //da controllare 
     }
 }
@@ -41,6 +43,7 @@ void pseudo_free(void* p){
     }
     size_t p_size = *((int*)p);   //to check 
     void* v_mem = (void*)mem;
+
     if (p >= v_mem && p< v_mem+(MEMORY_SIZE*sizeof(char))  ){   
         printf("freeing the block with buddyalloc\n");
         free_buddy(&buddy , p);
