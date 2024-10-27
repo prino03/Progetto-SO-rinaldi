@@ -31,7 +31,7 @@ void* pseudo_malloc(size_t size){
         int* ret_size=(int*)ret;
         *ret_size = size;
         printf("allocation with mmap completed returning pointer\n");
-        return ret + sizeof(int);  //da controllare 
+        return ret + sizeof(int);  
     }
 }
 
@@ -41,7 +41,7 @@ void pseudo_free(void* p){
         printf("error: NULL pointer\n");
         return;
     }
-    size_t p_size = *((int*)p);   //to check 
+    size_t p_size = *((int*)p);   
     void* v_mem = (void*)mem;
 
     if (p >= v_mem && p< v_mem+(MEMORY_SIZE*sizeof(char))  ){   
@@ -50,6 +50,8 @@ void pseudo_free(void* p){
     }
     else{
         printf("freeing the block with munmap\n");
-        munmap(p , p_size);
+        int ret = munmap(p , p_size);
+        if(ret<0)printf("Error with munmap\n");
+        else printf("block freed\n");
     }
 }

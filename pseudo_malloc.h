@@ -5,12 +5,12 @@
 #include "buddyalloc_bitmap.h"
 
 
-#define MAX_LEVELS 7
-#define MEMORY_SIZE (1<<20)    //1 megabyte
+#define MAX_LEVELS 9                    //0 is the biggest level
+#define MEMORY_SIZE (1<<20)             //1 megabyte
 #define BUCKET_SIZE (MEMORY_SIZE >> (MAX_LEVELS - 1))   
 #define BITMAP_SIZE  ((1<<MAX_LEVELS) - 1) / sizeof(char) 
-                                //    "(1<<max_levels)-1" is the numer of buddies
-                                //    then we divide by the sizeof char    
+//    "(1<<max_levels)-1" is the numer of buddies
+//    then we divide by the sizeof char    
 
 void pseudo_init();
 void* pseudo_malloc(size_t size);

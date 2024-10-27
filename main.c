@@ -9,13 +9,7 @@ void test_alloc_and_free(){
     for (int i = 1 ; i<MEMORY_SIZE*2 ; i=i<<1){ 
         printf("allocating block of size %d\n" , i );
         test_ptr = pseudo_malloc(i);
-        if(test_ptr!=NULL)printf("block allocated\n");
-
-        if(j%4==0){
-            printf("Now we free it\n");
-            pseudo_free(test_ptr);
-            printf("block freed\n");
-        }
+        if(j%4==0)pseudo_free(test_ptr);
         j++;
     }
 
