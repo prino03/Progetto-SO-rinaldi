@@ -17,7 +17,6 @@ void bitmap_init(bitmap* mappa , int req_bitmap_bits , char* buf_map){
     memset(buf_map, 0, req_bitmap_bits);
     mappa->map = buf_map;
     mappa->nbits = req_bitmap_bits;
-
 }
 
 //returns index of the parent
@@ -189,7 +188,7 @@ void* alloc_buddy(buddyalloc* buddy , size_t size){
     char* to_return = buddy->memory + to_sum;     
     ((int*)to_return)[0] = idx;    
     
-    //bitmap_printf(buddy->bitmap);
+    bitmap_printf(buddy->bitmap);
 
     return (void*) (to_return+sizeof(int));
 }
