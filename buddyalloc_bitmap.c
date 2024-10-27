@@ -153,7 +153,7 @@ void bitmap_change_children(bitmap* buddy_map ,int parent_idx , int value){
 void* alloc_buddy(buddyalloc* buddy , size_t size){
 
     if(size<=0){
-        printf("cant allocate 0 or less bytes\n");
+        printf("Error: cant allocate 0 or less bytes\n");
         return NULL;
     }
     
@@ -172,7 +172,7 @@ void* alloc_buddy(buddyalloc* buddy , size_t size){
     //check if there is an available buddy 
     int idx = bitmap_get_free_buddy_idx(buddy_map , level);
     if(idx<0){
-        printf("no free block available\n");
+        printf("Error: no free block available\n");
         return NULL;
     }
     printf("we found a block of index %d, now we update the bitmap\n" , idx);
