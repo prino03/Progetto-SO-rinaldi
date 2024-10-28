@@ -44,7 +44,7 @@ void* pseudo_malloc(size_t size){
 //we free previously allocated memory
 void pseudo_free(void* p){
     if(p==NULL){
-        printf("Error: NULL pointer\n");
+        printf("Error: cannot free a NULL pointer\n");
         return;
     }
 

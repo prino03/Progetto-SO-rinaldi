@@ -215,4 +215,5 @@ void free_buddy(buddyalloc* buddy , void* to_free){
 
     //now we have to free the parent, but only if our buddy is free
     bitmap_free_parent(buddy->bitmap , block_idx);
+    //bitmap_printf(buddy->bitmap);
 } 
